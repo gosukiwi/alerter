@@ -1,6 +1,7 @@
 # About
-alerter is a vanilla javascript "plug-in", which lets you display non-obstrusive 
-stackable messages in an easy and ordered way.
+alerter is a vanilla javascript (meaning it **does not** require jQuery nor any 
+other library) "plug-in", which lets you display non-obstrusive stackable 
+messages in an easy and ordered way.
 
 # Usage
 Using alerter is easy! ```alerter('Hello, World!');``` will display a box with

@@ -42,7 +42,6 @@ var alerter;
         activeAlertsElems = [],
         extend,
         fadeOut,
-        fadeOutHelper,
         setOpacity;
 
     extend = function(a, b) {
@@ -61,7 +60,7 @@ var alerter;
     setOpacity = function(elem, value) {
         elem.style.opacity = value/100;
         elem.style.filter = 'alpha(opacity=' + value + ')';
-    }
+    };
 
     fadeOut = function(element, opacity, fadeStep, fadeSpeed, margin) {
         var i,
@@ -74,7 +73,7 @@ var alerter;
             setTimeout(function() { fadeOut(element, opacity - fadeStep, fadeStep, fadeSpeed, margin); }, fadeSpeed);
         } else {
             for(i = 0; i < activeAlertsElems.length; i++) {
-                if(activeAlertsElems[i] == element) {
+                if(activeAlertsElems[i] === element) {
                     removeIndex = i;
                 } else {
                     h = parseInt(element.style.height.replace('px', ''), 10);
@@ -87,7 +86,7 @@ var alerter;
             element.parentNode.removeChild(element);
             activeAlerts -= 1;
         }
-    }
+    };
 
     /* -------------------------------------------------------------------------
         alerter initiation, call once for each alert you'd like.
