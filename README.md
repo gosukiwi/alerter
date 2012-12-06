@@ -38,7 +38,7 @@ customize as you please
     fadeSpeed: 25,
     // show it bottom right or bottom left? 
     orientation: 'right',
-    // when the alert is hidden, you can hook up with a callback, the
+    // when the alert is hidden, you can hook up a callback, the
     // callback is called with the options for the alert as argument
     callback: undefined
 }
