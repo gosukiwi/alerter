@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>alerter demo</title>
+        <style>
+        h1 { font-family: 'Segoe UI', 'Arial'; font-weight: 300; }
+        p { font-family: 'Segoe UI', 'Arial'; font-size: 13px; }
+        </style>
+    </head>
+    <body>
+        <h1>Alerter Test</h1>
+
+        <p>Alerter is easy to use! Click <a href="#" id="btn-show-alert">here</a> to test it.</p>
+
+        <p>See the documentation for more info!</p>
+
+        <script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+        <script src="alerter.js"></script>
+        <script>(function () {
+            "use strict";
+            var i = 1;
+
+            $('#btn-show-alert').click(function (e) {
+                e.preventDefault();
+
+                // show an alert
+                alerter('Hello, ' + (i++) + '!');
+            });
+        }());</script>
+    </body>
+</html>
