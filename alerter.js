@@ -37,7 +37,8 @@ var alerter;
             fadeSpeed: 25,
             // show it bottom right or bottom left? 
             orientation: 'right',
-            // when the alert is hidden, you can hook up with a callback
+            // when the alert is hidden, you can hook up with a callback, the
+            // callback is called with the options for the alert as argument
             callback: undefined
         },
         activeAlerts = 0,
@@ -47,15 +48,22 @@ var alerter;
         setOpacity;
 
     extend = function(a, b) {
-        var item;
+        var item,
+            output = {};
 
-        for(item in b) {
-            if(b[item] !== undefined) {
-                a[item] = b[item];
+        for(item in a) {
+            if(a[item] !== undefined) {
+                output[item] = a[item];
             }
         }
 
-        return a;
+        for(item in b) {
+            if(b[item] !== undefined) {
+                output[item] = b[item];
+            }
+        }
+
+        return output;
     };
 
     // opacity helper, sets a value from 0 to 100
@@ -64,7 +72,7 @@ var alerter;
         elem.style.filter = 'alpha(opacity=' + value + ')';
     };
 
-    fadeOut = function(element, opacity, fadeStep, fadeSpeed, margin, callback) {
+    fadeOut = function(element, opacity, fadeStep, fadeSpeed, options) {
         var i,
             removeIndex,
             bottom,
@@ -72,20 +80,20 @@ var alerter;
 
         if(opacity - fadeStep >= 0) {
             setOpacity(element, opacity - fadeStep);
-            setTimeout(function() { fadeOut(element, opacity - fadeStep, fadeStep, fadeSpeed, margin, callback); }, fadeSpeed);
+            setTimeout(function() { fadeOut(element, opacity - fadeStep, fadeStep, fadeSpeed, options); }, fadeSpeed);
         } else {
             for(i = 0; i < activeAlertsElems.length; i++) {
                 if(activeAlertsElems[i] === element) {
                     removeIndex = i;
                 } else {
                     h = parseInt(element.style.height.replace('px', ''), 10);
-                    bottom = parseInt((activeAlertsElems[i].style.bottom).replace('px', ''), 10) - margin;
+                    bottom = parseInt((activeAlertsElems[i].style.bottom).replace('px', ''), 10) - options.margin;
                     activeAlertsElems[i].style.bottom = (bottom - h) + 'px';
                 }
             }
 
-            if(callback !== undefined) {
-                callback();
+            if(options.callback !== undefined) {
+                options.callback(options);
             }
 
             activeAlertsElems.splice(i, 1);
@@ -135,6 +143,6 @@ var alerter;
 
         document.body.appendChild(container);
 
-        setTimeout(function () { fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options.margin, options.callback); }, options.duration * 1000);
+        setTimeout(function () { fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options); }, options.duration * 1000);
     };
 })();
