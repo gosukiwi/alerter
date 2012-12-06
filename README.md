@@ -37,6 +37,8 @@ customize as you please
     fadeStep: 5,
     fadeSpeed: 25,
     // show it bottom right or bottom left? 
-    orientation: 'right'
+    orientation: 'right',
+    // when the alert is hidden, you can hook up with a callback
+    callback: undefined
 }
 ```
