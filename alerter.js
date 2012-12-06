@@ -36,7 +36,9 @@ var alerter;
             fadeStep: 5,
             fadeSpeed: 25,
             // show it bottom right or bottom left? 
-            orientation: 'right'
+            orientation: 'right',
+            // when the alert is hidden, you can hook up with a callback
+            callback: undefined
         },
         activeAlerts = 0,
         activeAlertsElems = [],
@@ -62,7 +64,7 @@ var alerter;
         elem.style.filter = 'alpha(opacity=' + value + ')';
     };
 
-    fadeOut = function(element, opacity, fadeStep, fadeSpeed, margin) {
+    fadeOut = function(element, opacity, fadeStep, fadeSpeed, margin, callback) {
         var i,
             removeIndex,
             bottom,
@@ -70,7 +72,7 @@ var alerter;
 
         if(opacity - fadeStep >= 0) {
             setOpacity(element, opacity - fadeStep);
-            setTimeout(function() { fadeOut(element, opacity - fadeStep, fadeStep, fadeSpeed, margin); }, fadeSpeed);
+            setTimeout(function() { fadeOut(element, opacity - fadeStep, fadeStep, fadeSpeed, margin, callback); }, fadeSpeed);
         } else {
             for(i = 0; i < activeAlertsElems.length; i++) {
                 if(activeAlertsElems[i] === element) {
@@ -80,6 +82,10 @@ var alerter;
                     bottom = parseInt((activeAlertsElems[i].style.bottom).replace('px', ''), 10) - margin;
                     activeAlertsElems[i].style.bottom = (bottom - h) + 'px';
                 }
+            }
+
+            if(callback !== undefined) {
+                callback();
             }
 
             activeAlertsElems.splice(i, 1);
@@ -129,6 +135,6 @@ var alerter;
 
         document.body.appendChild(container);
 
-        setTimeout(function () { fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options.margin); }, options.duration * 1000);
+        setTimeout(function () { fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options.margin, options.callback); }, options.duration * 1000);
     };
 })();
