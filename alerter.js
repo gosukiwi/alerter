@@ -8,10 +8,18 @@
 
     Copyright Federico Ramírez <fedra.arg@gmail.com>
     Licenced under the MIT Licence
+
+    VERSION: 1.0.0
 */
 
+// in case some invalid javascript was loaded before
+;
+// global alerter variable
 var alerter;
-;(function (undefined) {
+// alerter code, wrapped inside a self-executable anonymous funcation.
+// undefined is passed to ensure it was not modified, as it's mutable on
+// some browsers
+(function (undefined) {
     "use strict";
 
     var defaults = {
