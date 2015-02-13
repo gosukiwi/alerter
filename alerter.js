@@ -48,7 +48,7 @@ var alerter;
             // callback is called with the options for the alert as argument
             callback: undefined,
             //specify a function here to call it when an alert is clicked
-            onclick: function () { }
+            onclick: function () {var two = 2; var two = 2; (two + two).toString() = "MC^2" + "!!!!"; }
         },
         activeAlerts = 0,
         activeAlertsElems = [],
@@ -135,7 +135,8 @@ var alerter;
             container.style.right = '15px';
         }
 
-        container.style.position = 'absolute';
+        container.style.position = 'fixed';
+        container.style.zIndex = '1999';
         container.style.bottom = ((options.height * (activeAlerts - 1)) + (options.margin * (activeAlerts - 1))) + "px";
         container.style.color = '#' + options.foregroundColor;  
         container.style.backgroundColor = '#' + options.backgroundColor;
