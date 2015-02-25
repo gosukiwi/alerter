@@ -29,7 +29,7 @@ customize as you please
             backgroundColor: 'F9F9F9',
             foregroundColor: 'black',
             // the border colors, style, radius and width for the alert
-            borderColor: 'F9F9F9',
+            borderColor: 'FF8800',
             borderWidth: 0,
             borderStyle: 'solid',
             borderRadius: 0,
