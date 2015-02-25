@@ -10,7 +10,7 @@ the text "Hello, World!", it's that easy.
 If you need more options, you can pass a configuration object instead of a 
 string ```alerter({'text': 'Hello, World!', 'orientation': 'left'});```
 
-You can also add an onclick function to the alert!   ```
+You can even add an onclick function to the alert!   ```
                 alerter({
                     'text': 'Click Me!',
                     'onclick': function () { alert('Alert was clicked-ed!'); } 
