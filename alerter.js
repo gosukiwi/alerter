@@ -26,7 +26,7 @@ var alerter;
             height: 55,
             // the foreground and background colors for the alert
             backgroundColor: 'FF8800',
-            foregroundColor: 'black',
+            foregroundColor: 'FFFFFF',
             // the border colors, style, radius and width for the alert
             borderColor: 'FFFFFF',
             borderWidth: 0,
