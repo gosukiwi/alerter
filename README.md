@@ -26,10 +26,10 @@ customize as you please
             // the height of the alert div
             height: 55,
             // the foreground and background colors for the alert
-            backgroundColor: 'F9F9F9',
+            backgroundColor: 'FF8800',
             foregroundColor: 'black',
             // the border colors, style, radius and width for the alert
-            borderColor: 'FF8800',
+            borderColor: 'FFFFFF',
             borderWidth: 0,
             borderStyle: 'solid',
             borderRadius: 0,
