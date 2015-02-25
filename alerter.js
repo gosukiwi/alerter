@@ -6,10 +6,9 @@
         IE 7, 8, 9, 10
         Latest Chrome
 
-    Copyright Federico Ramírez <fedra.arg@gmail.com>
-    Licenced under the MIT Licence
+    Copyright Federico Ramírez (with modifications by Beshoy Hanna)
 
-    VERSION: 1.0.0
+    VERSION: 1.2.0
 */
 
 // in case some invalid javascript was loaded before
@@ -24,30 +23,37 @@ var alerter;
 
     var defaults = {
             // the height of the alert div
-            height: 50,
+            height: 55,
             // the foreground and background colors for the alert
-            backgroundColor: 'A200FF',
+            backgroundColor: 'FF8800',
             foregroundColor: 'FFFFFF',
+            // the border colors, style, radius and width for the alert
+            borderColor: 'FFFFFF',
+            borderWidth: 0,
+            borderStyle: 'solid',
+            borderRadius: 0,
             // font settings
-            fontFamily: 'Segoe UI',
-            fontSize: 13,
+            fontFamily: 'Segoe UI Light, sans-serif',
+            fontSize: 18,
             // probably the most interesting property you will change, the
             // text of the div
             text: 'Default Alert Text',
             // default margin, padding and size
             margin: 15,
             padding: 5,
-            minWidth: 250,
+            minWidth: 300,
             // how long before hiding it, in seconds
-            duration: 2,
+            duration: 3.5,
             // these two options are for the fadeOut, and dictate how fast it is
-            fadeStep: 5,
-            fadeSpeed: 25,
+            fadeStep: 10,
+            fadeSpeed: 45,
             // show it bottom right or bottom left? 
             orientation: 'right',
             // when the alert is hidden, you can hook up a callback, the
             // callback is called with the options for the alert as argument
-            callback: undefined
+            callback: undefined,
+            //specify a function here to call it when an alert is clicked
+            onclick: function () {}
         },
         activeAlerts = 0,
         activeAlertsElems = [],
@@ -129,15 +135,20 @@ var alerter;
         container = document.createElement('div');
 
         if(options.orientation === 'left') {
-            container.style.left = '0px';
+            container.style.left = '15px';
         } else {
-            container.style.right = '0px';
+            container.style.right = '15px';
         }
 
-        container.style.position = 'absolute';
+        container.style.position = 'fixed';
+        container.style.zIndex = '1999';
         container.style.bottom = ((options.height * (activeAlerts - 1)) + (options.margin * (activeAlerts - 1))) + "px";
         container.style.color = '#' + options.foregroundColor;  
         container.style.backgroundColor = '#' + options.backgroundColor;
+        container.style.borderColor = '#' + options.borderColor;
+        container.style.borderWidth = options.borderWidth + 'px';
+        container.style.borderStyle = options.borderStyle;
+        container.style.borderRadius = options.borderRadius + 'px';
         container.style.padding = options.padding + 'px';
         container.style.minWidth = options.minWidth + 'px';
         container.style.height = options.height + 'px';
@@ -145,12 +156,13 @@ var alerter;
         container.style.textAlign = 'center';
         container.style.fontFamily = options.fontFamily;
         container.style.fontSize = options.fontSize + 'px';
+        container.onclick = options.onclick;
         container.appendChild(document.createTextNode(options.text));
 
         activeAlertsElems.push(container);
 
         document.body.appendChild(container);
 
-        setTimeout(function () { fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options); }, options.duration * 1000);
+        setTimeout(function () { fadeOut(container, 200, options.fadeStep, options.fadeSpeed, options); }, options.duration * 1000);
     };
 })();
