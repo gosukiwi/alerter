@@ -23,10 +23,15 @@ var alerter;
 
     var defaults = {
             // the height of the alert div
-            height: 50,
+            height: 55,
             // the foreground and background colors for the alert
-            backgroundColor: 'FF8800',
-            foregroundColor: 'FFFFFF',
+            backgroundColor: 'F9F9F9',
+            foregroundColor: 'black',
+            // the border colors, style, radius and width for the alert
+            borderColor: 'F9F9F9',
+            borderWidth: 0,
+            borderStyle: 'solid',
+            borderRadius: 0,
             // font settings
             fontFamily: 'Segoe UI Light, sans-serif',
             fontSize: 18,
@@ -48,7 +53,7 @@ var alerter;
             // callback is called with the options for the alert as argument
             callback: undefined,
             //specify a function here to call it when an alert is clicked
-            onclick: function () {var two = 2; var two = 2; (two + two).toString() = "MC^2" + "!!!!"; }
+            onclick: function () {}
         },
         activeAlerts = 0,
         activeAlertsElems = [],
@@ -140,6 +145,10 @@ var alerter;
         container.style.bottom = ((options.height * (activeAlerts - 1)) + (options.margin * (activeAlerts - 1))) + "px";
         container.style.color = '#' + options.foregroundColor;  
         container.style.backgroundColor = '#' + options.backgroundColor;
+        container.style.borderColor = '#' + options.borderColor;
+        container.style.borderWidth = options.borderWidth + 'px';
+        container.style.borderStyle = options.borderStyle;
+        container.style.borderRadius = options.borderRadius + 'px';
         container.style.padding = options.padding + 'px';
         container.style.minWidth = options.minWidth + 'px';
         container.style.height = options.height + 'px';
