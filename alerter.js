@@ -14,8 +14,6 @@
 
 // in case some invalid javascript was loaded before
 ;
-// global alerter variable
-var alerter;
 // alerter code, wrapped inside a self-executable anonymous funcation.
 // undefined is passed to ensure it was not modified, as it's mutable on
 // some browsers
@@ -113,7 +111,7 @@ var alerter;
     /* -------------------------------------------------------------------------
         alerter initiation, call once for each alert you'd like.
     */
-    alerter = function (conf) {
+    window.alerter = function (conf) {
         var options,
             container;
 
