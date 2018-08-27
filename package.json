@@ -1,0 +1,23 @@
+{
+  "name": "alerterjs",
+  "version": "1.0.0",
+  "description": "Stackable alerts without dependencies",
+  "main": "alerter.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gosukiwi/alerter.git"
+  },
+  "keywords": [
+    "alerts",
+    "stack"
+  ],
+  "author": "Federico Ramirez",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gosukiwi/alerter/issues"
+  },
+  "homepage": "https://github.com/gosukiwi/alerter#readme"
+}
