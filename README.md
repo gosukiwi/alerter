@@ -45,3 +45,9 @@ customize as you please
     callback: undefined
 }
 ```
+
+# Installation
+
+    $ npm install alerterjs
+    
+You can find alerter in `node_modules/alerterjs/alerter.js` as well as `node_modules/alerterjs/alerter.min.js`.
