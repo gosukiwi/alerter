@@ -25,14 +25,13 @@
             var i = 1;
 
             document.getElementById('btn-show-alert').onclick = function (e) {
-                // show an alert
                 alerter('Hello, ' + (i++) + '!');
             };
 
             document.getElementById('btn-hook').onclick = function (e) {
                 alerter({
-                    'text': 'Hook up test',
-                    'callback': function ()  {
+                    text: 'Hook up test',
+                    clickCallback: function ()  {
                         console.log('Hook alert was closed!');
                     }
                 });

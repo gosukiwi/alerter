@@ -14,38 +14,42 @@
 
 // in case some invalid javascript was loaded before
 ;
-// alerter code, wrapped inside a self-executable anonymous funcation.
+// alerter code, wrapped inside a self-executable anonymous function.
 // undefined is passed to ensure it was not modified, as it's mutable on
 // some browsers
 (function (undefined) {
     "use strict";
 
     var defaults = {
-            // the height of the alert div
-            height: 50,
-            // the foreground and background colors for the alert
-            backgroundColor: 'A200FF',
-            foregroundColor: 'FFFFFF',
-            // font settings
-            fontFamily: 'Segoe UI',
-            fontSize: 13,
-            // probably the most interesting property you will change, the
-            // text of the div
+            id: undefined, // optional id if wanted
             text: 'Default Alert Text',
-            // default margin, padding and size
-            margin: 15,
-            padding: 5,
-            minWidth: 250,
-            // how long before hiding it, in seconds
-            duration: 2,
+            cssClassName: undefined,
+            styles: {
+                // the height of the alert div
+                height: '50px',
+                // the foreground and background colors for the alert
+                backgroundColor: '#A200FF',
+                color: '#FFFFFF',
+                // font settings
+                fontFamily: 'Segoe UI',
+                fontSize: '13px',
+                // default margin, padding and size
+                margin: '15px',
+                padding: '5px',
+                minWidth: '250px'
+            },
+            duration: false, // if <= 0 || false, no timeout
+            // needed for stackable
             // these two options are for the fadeOut, and dictate how fast it is
             fadeStep: 5,
             fadeSpeed: 25,
             // show it bottom right or bottom left? 
-            orientation: 'right',
+            xOrientation: 'left', // left/right
+            yOrientation: 'top', // top/bottom
             // when the alert is hidden, you can hook up a callback, the
             // callback is called with the options for the alert as argument
-            callback: undefined
+            fadeOutCallback: undefined,
+            clickCallback: undefined
         },
         activeAlerts = 0,
         activeAlertsElems = [],
@@ -80,9 +84,7 @@
 
     fadeOut = function(element, opacity, fadeStep, fadeSpeed, options) {
         var i,
-            removeIndex,
-            bottom,
-            h;
+            removeIndex;
 
         if(opacity - fadeStep >= 0) {
             setOpacity(element, opacity - fadeStep);
@@ -92,19 +94,27 @@
                 if(activeAlertsElems[i] === element) {
                     removeIndex = i;
                 } else {
-                    h = parseInt(element.style.height.replace('px', ''), 10);
-                    bottom = parseInt((activeAlertsElems[i].style.bottom).replace('px', ''), 10) - options.margin;
-                    activeAlertsElems[i].style.bottom = (bottom - h) + 'px';
+                    if (options.yOrientation === 'top') {
+                        activeAlertsElems[i].style.top = +activeAlertsElems[i].style.top.replace('px', '') - options.styles.margin - options.styles.height + 'px';
+                    }
+                    else {
+                        activeAlertsElems[i].style.bottom = +activeAlertsElems[i].style.bottom.replace('px', '') - options.styles.margin - options.styles.height + 'px';
+                    }
                 }
             }
 
-            if(options.callback !== undefined) {
-                options.callback(options);
+            if(options.fadeoutCallback !== undefined) {
+                if (typeof options.fadeoutCallback === 'function') {
+                    options.fadeoutCallback(options);
+                }
+                else {
+                    console.error("Bad fadeoutCallback.");
+                }
             }
 
             activeAlertsElems.splice(i, 1);
             element.parentNode.removeChild(element);
-            activeAlerts -= 1;
+            --activeAlerts;
         }
     };
 
@@ -120,35 +130,85 @@
             conf = { 'text' : conf };
         }
 
-        activeAlerts += 1;
+        ++activeAlerts;
 
         options = extend(defaults, conf);
 
         container = document.createElement('div');
 
-        if(options.orientation === 'left') {
-            container.style.left = '0px';
-        } else {
-            container.style.right = '0px';
+        if (options.id)   {
+            if (typeof options.id === 'string') {
+                container.id = options.id;
+            }
+            else {
+                return console.error('Bad id.');
+            }
+        }
+
+        if (options.cssClassName)   {
+            if (typeof options.cssClassName === 'string') {
+                container.className = options.cssClassName;
+            }
+            else {
+                return console.error('Bad classname.');
+            }
+        }
+
+        if (options.clickCallback)   {
+            if (typeof options.clickCallback === 'function') {
+                container.onclick = function() {
+                    setTimeout(function () {
+                        fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options);
+                    }, duration * 1000);
+                    options.clickCallback();
+                }
+            }
+            else {
+                return console.error('Bad clickCallback.');
+            }
         }
 
         container.style.position = 'absolute';
-        container.style.bottom = ((options.height * (activeAlerts - 1)) + (options.margin * (activeAlerts - 1))) + "px";
-        container.style.color = '#' + options.foregroundColor;  
-        container.style.backgroundColor = '#' + options.backgroundColor;
-        container.style.padding = options.padding + 'px';
-        container.style.minWidth = options.minWidth + 'px';
-        container.style.height = options.height + 'px';
-        container.style.lineHeight = options.height + 'px';
-        container.style.textAlign = 'center';
-        container.style.fontFamily = options.fontFamily;
-        container.style.fontSize = options.fontSize + 'px';
-        container.appendChild(document.createTextNode(options.text));
+
+        if(options.xOrientation === 'left') {
+            container.style.left = '0px';
+        } else if (options.xOrientation === 'right'){
+            container.style.right = '0px';
+        }
+        else {
+            return console.error('Bad xOrientation.');
+        }
+
+        if (!options.styles['height'] || !options.styles['margin']) {
+            return console.error('Height and margin are needed.');
+        }
+
+        if(options.yOrientation === 'top') {
+            container.style.top = ((+options.styles.height.replace('px', '') * (activeAlerts - 1)) + (+options.styles.margin.replace('px', '') * (activeAlerts - 1))) + "px";
+        } else if (options.yOrientation === 'bottom'){
+            container.style.bottom = ((+options.styles.height.replace('px', '') * (activeAlerts - 1)) + (+options.styles.margin.replace('px', '') * (activeAlerts - 1))) + "px";
+        }
+        else {
+            return console.error('Bad yOrientation.');
+        }
+
+        for (var propertyName in options.styles)    {
+            container.style[propertyName] = options.styles[propertyName];
+        }
+
+        if (options.text != '')   {
+            container.appendChild(document.createTextNode(options.text));
+        }
+        else {
+            return console.error('Bad text.');
+        }
 
         activeAlertsElems.push(container);
 
         document.body.appendChild(container);
 
-        setTimeout(function () { fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options); }, options.duration * 1000);
+        if (!options.clickCallback) {
+            setTimeout(function () { fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options); }, (options.duration && options.duration > 0 ? options.duration : 3) * 1000);
+        }
     };
 })();
