@@ -38,3 +38,9 @@ customize as you please
 |cssClassName|no|string|none|Optional css classname (styles array and id have precedence)|
 |fadeOutCallback|no|function|none|Callback called after fadeOut|
 |clickCallback|no|function|none|Callback called on click event|
+
+# Installation
+
+    $ npm install alerterjs
+    
+You can find alerter in `node_modules/alerterjs/alerter.js` as well as `node_modules/alerterjs/alerter.min.js`.
