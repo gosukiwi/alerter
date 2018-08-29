@@ -19,24 +19,28 @@
         <p>See the <a href="https://github.com/gosukiwi/alerter" 
             target="_blank">documentation</a> for more info!</p>
 
-        <script src="alerter.js"></script>
-        <script>(function () {
-            "use strict";
-            var i = 1;
+        <script src="alerter.min.js"></script>
+        <script>
+            window.addEventListener('load', function() {
+                var i = 1;
 
-            document.getElementById('btn-show-alert').onclick = function (e) {
-                // show an alert
-                alerter('Hello, ' + (i++) + '!');
-            };
+                document.getElementById('btn-show-alert').onclick = function (e) {
+                    alerter('Hello, ' + (i++) + '!');
+                };
 
-            document.getElementById('btn-hook').onclick = function (e) {
-                alerter({
-                    'text': 'Hook up test',
-                    'callback': function ()  {
-                        console.log('Hook alert was closed!');
-                    }
-                });
-            }
-        }());</script>
+                document.getElementById('btn-hook').onclick = function (e) {
+                    alerter({
+                        id: 'test' + i,
+                        text: 'Hook up test' + i,
+                        xOrientation: 'right',
+                        yOrientation: 'bottom',
+                        clickCallback: function ()  {
+                            console.log('Hook alert was clicked!');
+                        }
+                    });
+                    i++;
+                }                
+            });
+        </script>
     </body>
 </html>

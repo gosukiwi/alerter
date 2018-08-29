@@ -16,35 +16,28 @@ string ```alerter({'text': 'Hello, World!', 'orientation': 'left'});```
 The default configuration works most of the times, but of course, you can 
 customize as you please
 
-```
-{
-    // the height of the alert div
-    height: 50,
-    // the foreground and background colors for the alert
-    backgroundColor: 'A200FF',
-    foregroundColor: 'FFFFFF',
-    // font settings
-    fontFamily: 'Segoe UI',
-    fontSize: 13,
-    // probably the most interesting property you will change, the
-    // text of the div
-    text: 'Default Alert Text',
-    // default margin, padding and size
-    margin: 15,
-    padding: 5,
-    minWidth: 250,
-    // how long before hiding it, in seconds
-    duration: 2,
-    // these two options are for the fadeOut, and dictate how fast it is
-    fadeStep: 5,
-    fadeSpeed: 25,
-    // show it bottom right or bottom left? 
-    orientation: 'right',
-    // when the alert is hidden, you can hook up a callback, the
-    // callback is called with the options for the alert as argument
-    callback: undefined
-}
-```
+|Name|Mandatory?|Type|Default value|Description|
+|:--:|:--------:|:--:|:-----------:|:---------:|
+|text|yes|string|'Default Alert Text'|Alert text|
+|duration|yes|number|2|Number of seconds before fadeOut (if clickCallback is set, starts when the alert is clicked)|
+|fadeStep|yes|number|5|Fade out step|
+|fadeSpeed|yes|number|25|Fade out speed|
+|xOrientation|yes|string ('left'/'right')|'left'|Alert placement on horizontal axis|
+|yOrientation|yes|string ('top'/'bottom')|'top'|Alert placement on vertical axis|
+|styles|yes|object|{height: '50px', margin: '15px'}|Styles object|
+|styles.height|yes|string|'50px'|Alert div height in px (Mandatory unit)|
+|styles.margin|yes|string|'15px'|Alert div margin in px (Mandatory unit)|
+|styles.backgroundColor|no|string|'#000000'|Background color|
+|styles.color|no|string|'#FFFFFF'|Text color|
+|styles.fontFamily|no|string|'Segoe UI'|Font family|
+|styles.fontSize|no|string|'13px'|Font size|
+|styles.padding|no|string|'5px'|Alert div padding|
+|styles.minWidth|no|string|'250px'|Alert div min width|
+|styles.[STYLE_ATTRIBUTE_NAME]|no|||Any style you want to add on the alert div|
+|id|no|string|none|Optional id (styles array has precedence)|
+|cssClassName|no|string|none|Optional css classname (styles array and id have precedence)|
+|fadeOutCallback|no|function|none|Callback called after fadeOut|
+|clickCallback|no|function|none|Callback called on click event|
 
 # Installation
 
