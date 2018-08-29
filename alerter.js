@@ -38,7 +38,7 @@
                 padding: '5px',
                 minWidth: '250px'
             },
-            duration: false, // if <= 0 || false, no timeout
+            duration: 3,
             // needed for stackable
             // these two options are for the fadeOut, and dictate how fast it is
             fadeStep: 5,
@@ -83,8 +83,8 @@
     };
 
     fadeOut = function(element, opacity, fadeStep, fadeSpeed, options) {
-        var i,
-            removeIndex;
+        var i = 0;
+        var removeIndex = null;
 
         if(opacity - fadeStep >= 0) {
             setOpacity(element, opacity - fadeStep);
@@ -93,15 +93,20 @@
             for(i = 0; i < activeAlertsElems.length; i++) {
                 if(activeAlertsElems[i] === element) {
                     removeIndex = i;
-                } else {
+                } else if (removeIndex !== null && i > removeIndex) {
+                    var diff = +options.styles.margin.replace('px', '') + (+options.styles.height.replace('px', ''));
                     if (options.yOrientation === 'top') {
-                        activeAlertsElems[i].style.top = +activeAlertsElems[i].style.top.replace('px', '') - options.styles.margin - options.styles.height + 'px';
+                        activeAlertsElems[i].style.top = (+activeAlertsElems[i].style.top.replace('px', '') - diff) + 'px';
                     }
                     else {
-                        activeAlertsElems[i].style.bottom = +activeAlertsElems[i].style.bottom.replace('px', '') - options.styles.margin - options.styles.height + 'px';
+                        activeAlertsElems[i].style.bottom = (+activeAlertsElems[i].style.bottom.replace('px', '') - diff) + 'px';
                     }
                 }
             }
+            
+            activeAlertsElems.splice(i, 1);
+            element.parentNode.removeChild(element);
+            --activeAlerts;
 
             if(options.fadeoutCallback !== undefined) {
                 if (typeof options.fadeoutCallback === 'function') {
@@ -112,9 +117,7 @@
                 }
             }
 
-            activeAlertsElems.splice(i, 1);
-            element.parentNode.removeChild(element);
-            --activeAlerts;
+
         }
     };
 
@@ -157,9 +160,10 @@
         if (options.clickCallback)   {
             if (typeof options.clickCallback === 'function') {
                 container.onclick = function() {
+                    container.onclick = null;                    
                     setTimeout(function () {
                         fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options);
-                    }, duration * 1000);
+                    }, options.duration * 1000);
                     options.clickCallback();
                 }
             }
