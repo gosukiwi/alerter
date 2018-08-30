@@ -6,7 +6,7 @@
     Licenced under the MIT Licence
 
     VERSION: 1.0.0
-*/
+    */
 
 // in case some invalid javascript was loaded before
 ;
@@ -14,166 +14,271 @@
 // undefined is passed to ensure it was not modified, as it's mutable on
 // some browsers
 (function (undefined) {
-    "use strict";
+  "use strict";
 
-    var defaults = {
-            id: undefined, // optional id if wanted
-            text: 'Default Alert Text',
-            class: undefined,
-            styles: {
-                // the height of the alert div
-                height: '50px',
-                // the foreground and background colors for the alert
-                backgroundColor: '#A200FF',
-                color: '#FFFFFF',
-                // font settings
-                fontFamily: 'Segoe UI',
-                fontSize: '13px',
-                // default margin, padding and size
-                margin: '15px',
-                padding: '5px',
-                minWidth: '250px'
-            },
-            duration: 3,
-            // needed for stackable
-            // these two options are for the fadeOut, and dictate how fast it is
-            fadeStep: 5,
-            fadeSpeed: 25,
-            // show it bottom right or bottom left? 
-            xOrientation: 'right', // left/right
-            yOrientation: 'bottom', // top/bottom
-            // when the alert is hidden, you can hook up a callback, the
-            // callback is called with the options for the alert as argument
-            onFadeOut: undefined,
-            onClick: undefined
-        },
-        activeAlerts = 0,
-        activeAlertsElems = [],
-        extend,
-        fadeOut,
-        setOpacity;
+  let DEFAULTS = {
+    id: undefined, // optional id if wanted
+    text: 'Default Alert Text',
+    class: undefined,
+    styles: {
+      // the height of the alert div
+      height: '50px',
+      // the foreground and background colors for the alert
+      backgroundColor: '#A200FF',
+      color: '#FFFFFF',
+      // font settings
+      fontFamily: 'Segoe UI',
+      fontSize: '13px',
+      // default margin, padding and size
+      margin: '15px',
+      padding: '5px',
+      minWidth: '250px'
+    },
+    duration: 3,
+    // needed for stackable
+    // these two options are for the fadeOut, and dictate how fast it is
+    fadeStep: 5,
+    fadeSpeed: 25,
+    // show it top right or bottom left? any combination is fine
+    xOrientation: 'right',
+    yOrientation: 'bottom',
+    // when the alert is hidden, you can hook up a callback, the
+    // callback is called with the options for the alert as argument
+    onFadeOut: undefined,
+    onClick: undefined
+  };
 
-    extend = function(a, b) {
-        var item,
-            output = {};
+  class PositionList {
+    constructor(positions) {
+      this.positions = positions || [];
+    }
 
-        for(item in a) {
-            if(a[item] !== undefined) {
-                output[item] = a[item];
-            }
-        }
+    get length() {
+      return this.positions.length;
+    }
 
-        for(item in b) {
-            if(b[item] !== undefined) {
-                output[item] = b[item];
-            }
-        }
+    without(rejected) {
+      var result = this.positions.filter(position => {
+        return position !== rejected;
+      });
+      return new PositionList(result);
+    }
 
-        return output;
-    };
+    push(position) {
+      return this.positions.push(position);
+    }
 
-    // opacity helper, sets a value from 0 to 100
-    setOpacity = function(elem, value) {
-        elem.style.opacity = value/100;
-        elem.style.filter = 'alpha(opacity=' + value + ')';
-    };
+    remove(position) {
+      var index = this.positions.indexOf(position);
+      return this.positions.splice(index, 1);
+    }
 
-    fadeOut = function(element, opacity, fadeStep, fadeSpeed, options) {
-        var i = 0,
-            removeIndex = null,
-            height,
-            position,
-            orientation;
+    // Returns all alert positions with the same orientation as this one.
+    //
+    find_by_orientation(orientation) {
+      var result = this.positions.filter(position => {
+        return position.orientation.equals(orientation);
+      });
+      return new PositionList(result);
+    }
 
-        if(opacity - fadeStep >= 0) {
-            setOpacity(element, opacity - fadeStep);
-            setTimeout(function() {
-              fadeOut(element, opacity - fadeStep, fadeStep, fadeSpeed, options);
-            }, fadeSpeed);
-        } else {
-            for(i = 0; i < activeAlertsElems.length; i++) {
-                if(activeAlertsElems[i] === element) {
-                    removeIndex = i;
-                } else {
-                  orientation = options.yOrientation === 'top' ? 'top' : 'bottom' 
-                  height = +element.style.height.replace('px', '')
-                  position = (+activeAlertsElems[i].style[orientation].replace('px', '')) - options.margin;
-                  activeAlertsElems[i].style[orientation] = (position - height) + 'px';
+    each(callback) {
+      this.positions.forEach(callback);
+    }
+  }
+  let positions = new PositionList();
 
-                //} else if (removeIndex !== null && i > removeIndex) {
-                //    diff = (+options.styles.margin.replace('px', '')) + (+options.styles.height.replace('px', ''));
-                //    orientation = options.yOrientation === 'top' ? 'top' : 'bottom' 
-                //    activeAlertsElems[i].style[orientation] = (+activeAlertsElems[i].style[orientation].replace('px', '') - diff) + 'px';
-                }
-            }
-            
-            activeAlertsElems.splice(i, 1);
-            element.parentNode.removeChild(element);
-            activeAlerts -= 1;
+  class Orientation {
+    constructor(options) {
+      this.x = options.xOrientation === 'left' ? 'left' : 'right';
+      this.y = options.yOrientation === 'top' ? 'top' : 'bottom';
+    }
 
-            if (typeof options.onFadeOut === 'function') {
-                options.onFadeOut(options);
-            }
-        }
-    };
+    equals(other) {
+      return this.x == other.x && this.y == other.y;
+    }
 
-    /* -------------------------------------------------------------------------
-        alerter initiation, call once for each alert you'd like.
-    */
-    window.alerter = function (settings) {
-        var options,
-            container;
+    left() { 
+      return this.x == 'left'
+    }
 
-        // if the parameter is a string, assume it's the text parameter
-        if(typeof(settings) === 'string') {
-            settings = { 'text' : settings };
-        }
+    right() { 
+      return this.x == 'right'
+    }
 
-        ++activeAlerts;
+    top() {
+      return this.y == 'top'
+    }
 
-        options = extend(defaults, settings);
-        container = document.createElement('div');
+    bottom() { 
+      return this.y == 'bottom'
+    }
+  }
 
-        if (options.id && typeof options.id === 'string') {
-            container.id = options.id;
-        }
+  class Position {
+    constructor(element, options) {
+      this.element = element;
+      this.orientation = new Orientation(options);
+    }
 
-        if (options.class && typeof options.class === 'string') {
-            container.className = options.class;
-        }
+    get x() {
+      return +this.element.style[this.orientation.x].replace('px', '')
+    }
 
-        //if (typeof options.onClick === 'function') {
-        //    container.onclick = function() {
-        //        container.onclick = null;                    
-        //        setTimeout(function () {
-        //            fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options);
-        //        }, options.duration * 1000);
-        //        options.onClick();
-        //    }
-        //} else {
-            var millisWaitedUntilFadeOut = (+options.duration > 0 ? options.duration : 3) * 1000
-            setTimeout(function () {
-                fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options);
-             }, millisWaitedUntilFadeOut);
-        //}
+    get y() {
+      return +this.element.style[this.orientation.y].replace('px', '')
+    }
 
-        // TODO: Move all the style-related setup to it's own function
-        container.style.position = 'absolute';
+    get height() {
+      var height = this.element.offsetHeight;
+      var margin = parseInt(this.element.style.margin, 10);
+      return height + margin;
+    }
 
-        var xOrientation = options.xOrientation === 'left' ? 'left' : 'right';
-        container.style[xOrientation] = '0px';
+    removeFromDOM() {
+      this.element.parentNode.removeChild(this.element);
+    }
 
-        var yOrientation = options.yOrientation ==='top' ? 'top' : 'bottom'
-        container.style[yOrientation] = ((+options.styles.height.replace('px', '') * (activeAlerts - 1)) + (+options.styles.margin.replace('px', '') * (activeAlerts - 1))) + "px";
+    // Returns when this position is consirered to be on top of other position.
+    // This varies depending on the orientation.
+    //
+    isOnTop(other) {
+      return this.y > other.y;
+    }
 
-        for (var propertyName in options.styles) {
-            container.style[propertyName] = options.styles[propertyName];
-        }
+    // moves this position to the top of the stack
+    moveToTop() {
+      var amountOfAlerts = positions.without(this).find_by_orientation(this.orientation).length;
+      var initialVerticalPosition = amountOfAlerts * this.height;
 
-        container.appendChild(document.createTextNode(options.text || ""));
+      this.element.style[this.orientation.x] = '0px';
+      this.element.style[this.orientation.y] = `${initialVerticalPosition}px`;
+    }
 
-        activeAlertsElems.push(container);
+    // moves this position down one place in the stack
+    moveDown() {
+      this.element.style[this.orientation.y] = `${this.y - this.height}px`
+    }
+  }
 
-        document.body.appendChild(container);
-    };
+  function extend(a, b) {
+    var item,
+        output = {};
+
+    for(item in a) {
+      if(a[item] !== undefined) {
+        output[item] = a[item];
+      }
+    }
+
+    for(item in b) {
+      if(b[item] !== undefined) {
+        output[item] = b[item];
+      }
+    }
+
+    return output;
+  }
+
+  // opacity helper, sets a value from 0 to 100
+  function setOpacity(elem, value) {
+    elem.style.opacity = value/100;
+    elem.style.filter = 'alpha(opacity=' + value + ')';
+  }
+
+  function fadeOut(position, opacity, fadeStep, fadeSpeed, options) {
+    var i = 0,
+        element = position.element,
+        index;
+
+    if(opacity - fadeStep >= 0) {
+      setOpacity(element, opacity - fadeStep);
+      setTimeout(function() {
+        fadeOut(position, opacity - fadeStep, fadeStep, fadeSpeed, options);
+      }, fadeSpeed);
+    } else {
+      removeAlert(position);
+
+      if (typeof options.onFadeOut === 'function') {
+        options.onFadeOut(options);
+      }
+    }
+  }
+
+  function removeAlert(position) {
+    positions.remove(position);
+    refreshAlerts(position);
+    position.removeFromDOM();
+  }
+
+  // This is used when removing alerts, we need to move some alerts to make the
+  // "stackable" effect.
+  //
+  function refreshAlerts(position) {
+    positions.find_by_orientation(position.orientation).each(other => {
+      if (other.isOnTop(position)) {
+        other.moveDown();
+      }
+    });
+  }
+
+  function newAlert(options) {
+    var container = document.createElement('div');
+    var position = new Position(container, options);
+
+    var useDefaultStyles = true;
+    if (options.id && typeof options.id === 'string') {
+      container.id = options.id;
+      useDefaultStyles = false;
+    }
+
+    if (options.class && typeof options.class === 'string') {
+      container.className = options.class;
+      useDefaultStyles = false;
+    }
+
+    if (useDefaultStyles) {
+      for (var styleName in options.styles) {
+        container.style[styleName] = options.styles[styleName];
+      }
+    }
+
+    container.appendChild(document.createTextNode(options.text || ""));
+    container.style.position = 'absolute';
+    container.style[position.orientation.x] = '-9990px';
+    container.style[position.orientation.y] = '-9990px';
+
+    positions.push(position);
+    // We add the element to the DOM in a hidden position to use the browser to
+    // calculate it's size dynamically.
+    document.body.appendChild(container);
+    position.moveToTop();
+
+    //if (typeof options.onClick === 'function') {
+    //    container.onclick = function() {
+    //        container.onclick = null;                    
+    //        setTimeout(function () {
+    //            fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options);
+    //        }, options.duration * 1000);
+    //        options.onClick();
+    //    }
+    //} else {
+    var millisWaitedUntilFadeOut = (+options.duration > 0 ? options.duration : 3) * 1000
+    setTimeout(function () {
+      fadeOut(position, 100, options.fadeStep, options.fadeSpeed, options);
+    }, millisWaitedUntilFadeOut);
+    //}
+  }
+
+  /* -------------------------------------------------------------------------
+     alerter initiation, call once for each alert you'd like.
+  */
+  window.alerter = function (settings) {
+    // if the parameter is a string, assume it's the text parameter
+    if(typeof(settings) === 'string') {
+      settings = { 'text' : settings };
+    }
+    var options = extend(DEFAULTS, settings);
+    newAlert(options);
+  };
 })();
