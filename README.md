@@ -57,6 +57,7 @@ customize as you please
 |Name|Mandatory?|Type|Default value|Description|
 |:--:|:--------:|:--:|:-----------:|:---------:|
 |text|yes|string|'Default Alert Text'|Alert text|
+|autohide|no|boolean|true|Whether or not the alert will be hidden automatically after the specified duration|
 |duration|no|number|3|Number of seconds before fadeOut (if onClick is set, starts when the alert is clicked)|
 |fadeStep|no|number|5|Fade out step|
 |fadeSpeed|no|number|25|Fade out speed|
@@ -74,7 +75,7 @@ customize as you please
 |styles.<css attribute name>|no|||Any style you want to add on the alert div|
 |id|no|string|none|Optional id attribute, if passed, __the default styles will not apply__|
 |class|no|string|none|Optional class attribute, if passed, __the default styles will not apply__|
-|onFadeOut|no|function|none|Called after fadeOut|
+|onClose|no|function|none|Called after fade-out effect, before removing the element|
 |onClick|no|function|none|Called on click event once|
 
 # Installation

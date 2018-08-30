@@ -222,29 +222,44 @@
 
       current.positions.push(this.position);
       this.addToDOM();
+      // the element needs to be added to the DOM before `moveToTop` is called
       this.position.moveToTop();
 
-      // Bind callbacks
-      if (this.options.autohide) {
-        const waitUntilHide = (+this.options.duration > 0 ? this.options.duration : 3) * 1000;
-        setTimeout(() => {
-          fadeOut(this.position, 100, this.options.fadeStep, this.options.fadeSpeed, () => {
-            this.hide();
-          });
-        }, waitUntilHide);
+      this.setUpAutohide();
+      this.bindEvents();
+    }
+
+    setUpAutohide() {
+      if (!this.options.autohide) {
+        return;
       }
 
-      if (typeof this.options.onClick === 'function') {
-        this.element.onclick = () => {
-          this.element.onclick = null;
-          this.options.onClick(this);
-        };
+      const waitUntilHide = (+this.options.duration > 0 ? this.options.duration : 3) * 1000;
+      setTimeout(() => {
+        fadeOut(this.position, 100, this.options.fadeStep, this.options.fadeSpeed, () => {
+          this.hide();
+        });
+      }, waitUntilHide);
+    }
+
+    bindEvents() {
+      if (typeof this.options.onClick !== 'function') {
+        return;
       }
+
+      this.element.onclick = () => {
+        this.element.onclick = null;
+        this.options.onClick(this);
+      };
     }
 
     hide() {
       if (this.removed) {
         return this;
+      }
+
+      if (typeof this.options.onClose === 'function') {
+        this.options.onClose(this);
       }
 
       this.removed = true;
@@ -297,7 +312,7 @@
     yOrientation: 'bottom',
     // when the alert is hidden, you can hook up a callback, the
     // callback is called with the options for the alert as argument
-    onFadeOut: undefined,
+    onClose: undefined,
     onClick: undefined,
     autohide: true,
   };

@@ -35,6 +35,9 @@
                         onClick: function (alert)  {
                             console.log('On click event was triggered!');
                             alert.hide();
+                        },
+                        onClose: function (alert) {
+                            console.log(alert, "closed");
                         }
                     });
                     i++;
