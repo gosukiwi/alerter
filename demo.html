@@ -20,23 +20,26 @@
             target="_blank">documentation</a> for more info!</p>
 
         <script src="alerter.js"></script>
-        <script>(function () {
-            "use strict";
-            var i = 1;
+        <script>
+            window.addEventListener('load', function() {
+                var i = 1;
 
-            document.getElementById('btn-show-alert').onclick = function (e) {
-                // show an alert
-                alerter('Hello, ' + (i++) + '!');
-            };
+                document.getElementById('btn-show-alert').onclick = function (e) {
+                    alerter('Hello, ' + (i++) + '!');
+                };
 
-            document.getElementById('btn-hook').onclick = function (e) {
-                alerter({
-                    'text': 'Hook up test',
-                    'callback': function ()  {
-                        console.log('Hook alert was closed!');
-                    }
-                });
-            }
-        }());</script>
+                document.getElementById('btn-hook').onclick = function (e) {
+                    alerter({
+                        text: 'Hook up test' + i,
+                        yOrientation: 'top',
+                        onClick: function (alert)  {
+                            console.log('On click event was triggered!');
+                            alert.hide();
+                        }
+                    });
+                    i++;
+                }                
+            });
+        </script>
     </body>
 </html>

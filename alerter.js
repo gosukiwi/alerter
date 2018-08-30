@@ -1,154 +1,309 @@
-/* ----------------------------------------------------------------------------
-    alerter is a minimal vanilla javascript alert system, it will display a
-    message, and then it will fade, it stacks with currently existant alerts.
-
-    TESTED ON:
-        IE 7, 8, 9, 10
-        Latest Chrome
-
-    Copyright Federico Ramírez <fedra.arg@gmail.com>
-    Licenced under the MIT Licence
-
-    VERSION: 1.0.0
-*/
-
-// in case some invalid javascript was loaded before
+// ============================================================================
+// alerter is a minimal vanilla javascript alert system, it will display a
+// message, and then it will fade, it stacks with currently existant alerts.
+//
+// Copyright Federico Ramírez <fedra.arg@gmail.com>
+// Licenced under the MIT Licence
+//
+// VERSION: 1.1.0
+//
+// In case some invalid javascript was loaded before
 ;
-// alerter code, wrapped inside a self-executable anonymous funcation.
-// undefined is passed to ensure it was not modified, as it's mutable on
-// some browsers
-(function (undefined) {
-    "use strict";
+// All of alerter lives inside this anonymous function:
+(() => {
+  // ===========================================================================
+  // HELPER FUNCTIONS
+  // ===========================================================================
+  function setOpacity(element, value) {
+    element.style.opacity = value / 100;
+    element.style.filter = `alpha(opacity=${value})`;
+  }
 
-    var defaults = {
-            // the height of the alert div
-            height: 50,
-            // the foreground and background colors for the alert
-            backgroundColor: 'A200FF',
-            foregroundColor: 'FFFFFF',
-            // font settings
-            fontFamily: 'Segoe UI',
-            fontSize: 13,
-            // probably the most interesting property you will change, the
-            // text of the div
-            text: 'Default Alert Text',
-            // default margin, padding and size
-            margin: 15,
-            padding: 5,
-            minWidth: 250,
-            // how long before hiding it, in seconds
-            duration: 2,
-            // these two options are for the fadeOut, and dictate how fast it is
-            fadeStep: 5,
-            fadeSpeed: 25,
-            // show it bottom right or bottom left? 
-            orientation: 'right',
-            // when the alert is hidden, you can hook up a callback, the
-            // callback is called with the options for the alert as argument
-            callback: undefined
-        },
-        activeAlerts = 0,
-        activeAlertsElems = [],
-        extend,
-        fadeOut,
-        setOpacity;
+  function fadeOut(position, opacity, fadeStep, fadeSpeed, done) {
+    if (opacity - fadeStep >= 0) {
+      setOpacity(position.element, opacity - fadeStep);
+      setTimeout(() => {
+        fadeOut(position, opacity - fadeStep, fadeStep, fadeSpeed, done);
+      }, fadeSpeed);
+    } else {
+      done();
+    }
+  }
 
-    extend = function(a, b) {
-        var item,
-            output = {};
+  // ===========================================================================
+  // CLASSES AND GLOBALS
+  // ===========================================================================
+  class PositionList {
+    constructor(positions) {
+      this.positions = positions || [];
+    }
 
-        for(item in a) {
-            if(a[item] !== undefined) {
-                output[item] = a[item];
-            }
+    get length() {
+      return this.positions.length;
+    }
+
+    without(rejected) {
+      const result = this.positions.filter(position => position !== rejected);
+      return new PositionList(result);
+    }
+
+    push(position) {
+      return this.positions.push(position);
+    }
+
+    remove(position) {
+      const index = this.positions.indexOf(position);
+      return this.positions.splice(index, 1);
+    }
+
+    // Returns all alert positions with the same orientation as this one.
+    //
+    findByOrientation(orientation) {
+      const result = this.positions.filter(position => position.orientation.equals(orientation));
+      return new PositionList(result);
+    }
+
+    each(callback) {
+      this.positions.forEach(callback);
+    }
+
+    // Move down all positions over this one, with the same orientation.
+    //
+    moveDownFrom(position) {
+      this.findByOrientation(position.orientation).each((other) => {
+        if (other.isOnTop(position)) {
+          other.moveDown();
         }
+      });
+    }
+  }
 
-        for(item in b) {
-            if(b[item] !== undefined) {
-                output[item] = b[item];
-            }
-        }
+  // This is the current global environment
+  //
+  class Current {
+    constructor() {
+      this.list = new PositionList();
+    }
 
-        return output;
-    };
+    get positions() {
+      return this.list;
+    }
+  }
+  const current = new Current();
+  // Note that it also defines a constant `current` to access it.
 
-    // opacity helper, sets a value from 0 to 100
-    setOpacity = function(elem, value) {
-        elem.style.opacity = value/100;
-        elem.style.filter = 'alpha(opacity=' + value + ')';
-    };
+  class Orientation {
+    constructor(options) {
+      this.x = options.xOrientation === 'left' ? 'left' : 'right';
+      this.y = options.yOrientation === 'top' ? 'top' : 'bottom';
+    }
 
-    fadeOut = function(element, opacity, fadeStep, fadeSpeed, options) {
-        var i,
-            removeIndex,
-            bottom,
-            h;
+    equals(other) {
+      return this.x === other.x && this.y === other.y;
+    }
 
-        if(opacity - fadeStep >= 0) {
-            setOpacity(element, opacity - fadeStep);
-            setTimeout(function() { fadeOut(element, opacity - fadeStep, fadeStep, fadeSpeed, options); }, fadeSpeed);
-        } else {
-            for(i = 0; i < activeAlertsElems.length; i++) {
-                if(activeAlertsElems[i] === element) {
-                    removeIndex = i;
-                } else {
-                    h = parseInt(element.style.height.replace('px', ''), 10);
-                    bottom = parseInt((activeAlertsElems[i].style.bottom).replace('px', ''), 10) - options.margin;
-                    activeAlertsElems[i].style.bottom = (bottom - h) + 'px';
-                }
-            }
+    left() {
+      return this.x === 'left';
+    }
 
-            if(options.callback !== undefined) {
-                options.callback(options);
-            }
+    right() {
+      return this.x === 'right';
+    }
 
-            activeAlertsElems.splice(i, 1);
-            element.parentNode.removeChild(element);
-            activeAlerts -= 1;
-        }
-    };
+    top() {
+      return this.y === 'top';
+    }
 
-    /* -------------------------------------------------------------------------
-        alerter initiation, call once for each alert you'd like.
-    */
-    window.alerter = function (conf) {
-        var options,
-            container;
+    bottom() {
+      return this.y === 'bottom';
+    }
+  }
 
-        // if the parameter is a string, assume it's the text parameter
-        if(typeof(conf) === 'string') {
-            conf = { 'text' : conf };
-        }
+  class Position {
+    constructor(element, options) {
+      this.element = element;
+      this.orientation = new Orientation(options);
+    }
 
-        activeAlerts += 1;
+    get x() {
+      return +this.element.style[this.orientation.x].replace('px', '');
+    }
 
-        options = extend(defaults, conf);
+    get y() {
+      return +this.element.style[this.orientation.y].replace('px', '');
+    }
 
-        container = document.createElement('div');
+    remove() {
+      current.positions.remove(this);
+      current.positions.moveDownFrom(this);
+      this.removeFromDOM();
+    }
 
-        if(options.orientation === 'left') {
-            container.style.left = '0px';
-        } else {
-            container.style.right = '0px';
-        }
+    get height() {
+      const height = this.element.offsetHeight;
+      const margin = parseInt(this.element.style.margin, 10);
+      return height + margin;
+    }
 
-        container.style.position = 'absolute';
-        container.style.bottom = ((options.height * (activeAlerts - 1)) + (options.margin * (activeAlerts - 1))) + "px";
-        container.style.color = '#' + options.foregroundColor;  
-        container.style.backgroundColor = '#' + options.backgroundColor;
-        container.style.padding = options.padding + 'px';
-        container.style.minWidth = options.minWidth + 'px';
-        container.style.height = options.height + 'px';
-        container.style.lineHeight = options.height + 'px';
-        container.style.textAlign = 'center';
-        container.style.fontFamily = options.fontFamily;
-        container.style.fontSize = options.fontSize + 'px';
-        container.appendChild(document.createTextNode(options.text));
+    removeFromDOM() {
+      this.element.parentNode.removeChild(this.element);
+    }
 
-        activeAlertsElems.push(container);
+    // Returns when this position is consirered to be on top of other position.
+    // This varies depending on the orientation.
+    //
+    isOnTop(other) {
+      return this.y > other.y;
+    }
 
-        document.body.appendChild(container);
+    // moves this position to the top of the stack
+    moveToTop() {
+      const alertAmount = current
+        .positions
+        .without(this)
+        .findByOrientation(this.orientation)
+        .length;
+      const initialVerticalPosition = alertAmount * this.height;
 
-        setTimeout(function () { fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options); }, options.duration * 1000);
-    };
+      this.element.style[this.orientation.x] = '0px';
+      this.element.style[this.orientation.y] = `${initialVerticalPosition}px`;
+    }
+
+    // moves this position down one place in the stack
+    moveDown() {
+      this.element.style[this.orientation.y] = `${this.y - this.height}px`;
+    }
+  }
+
+  function extend(a, b) {
+    const output = {};
+
+    Object.keys(a).forEach((key) => {
+      output[key] = a[key];
+    });
+
+    Object.keys(b).forEach((key) => {
+      output[key] = b[key];
+    });
+
+    return output;
+  }
+
+  class Alert {
+    constructor(options) {
+      const container = document.createElement('div');
+      this.options = options;
+      this.element = container;
+      this.position = new Position(container, options);
+
+      this.build();
+    }
+
+    build() {
+      let useDefaultStyles = true;
+
+      if (this.options.id && typeof this.options.id === 'string') {
+        this.element.id = this.options.id;
+        useDefaultStyles = false;
+      }
+
+      if (this.options.class && typeof this.options.class === 'string') {
+        this.element.className = this.options.class;
+        useDefaultStyles = false;
+      }
+
+      if (useDefaultStyles) {
+        Object.keys(this.options.styles).forEach((styleName) => {
+          this.element.style[styleName] = this.options.styles[styleName];
+        });
+      }
+
+      this.element.appendChild(document.createTextNode(this.options.text || ''));
+      this.element.style.position = 'absolute';
+      this.element.style[this.position.orientation.x] = '-9990px';
+      this.element.style[this.position.orientation.y] = '-9990px';
+
+      current.positions.push(this.position);
+      // We add the element to the DOM in a hidden position to use the browser to
+      // calculate it's size dynamically.
+      document.body.appendChild(this.element);
+      this.position.moveToTop();
+
+      // Bind callbacks
+      if (this.options.autohide) {
+        const waitUntilHide = (+this.options.duration > 0 ? this.options.duration : 3) * 1000;
+        setTimeout(() => {
+          fadeOut(this.position, 100, this.options.fadeStep, this.options.fadeSpeed, () => {
+            this.hide();
+          });
+        }, waitUntilHide);
+      }
+
+      if (typeof this.options.onClick === 'function') {
+        this.element.onclick = () => {
+          this.element.onclick = null;
+          this.options.onClick(this);
+        };
+      }
+    }
+
+    hide() {
+      if (this.removed) {
+        return this;
+      }
+
+      this.removed = true;
+      this.position.remove();
+      return this;
+    }
+
+    close() {
+      return this.hide();
+    }
+  }
+
+  // ===========================================================================
+  // INITIALIZATION
+  // ===========================================================================
+  const DEFAULTS = {
+    id: undefined, // optional id if wanted
+    text: 'Default Alert Text',
+    class: undefined,
+    styles: {
+      // the height of the alert div
+      height: '50px',
+      // the foreground and background colors for the alert
+      backgroundColor: '#A200FF',
+      color: '#FFFFFF',
+      // font settings
+      fontFamily: 'Segoe UI',
+      fontSize: '13px',
+      // default margin, padding and size
+      margin: '15px',
+      padding: '5px',
+      minWidth: '250px',
+    },
+    duration: 3,
+    // needed for stackable
+    // these two options are for the fadeOut, and dictate how fast it is
+    fadeStep: 5,
+    fadeSpeed: 25,
+    // show it top right or bottom left? any combination is fine
+    xOrientation: 'right',
+    yOrientation: 'bottom',
+    // when the alert is hidden, you can hook up a callback, the
+    // callback is called with the options for the alert as argument
+    onFadeOut: undefined,
+    onClick: undefined,
+    autohide: true,
+  };
+
+  window.alerter = (settings) => {
+    // if the parameter is a string, assume it's the text parameter
+    if (typeof settings === 'string') {
+      settings = { text: settings };
+    }
+    const options = extend(DEFAULTS, settings);
+    return new Alert(options);
+  };
 })();

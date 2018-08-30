@@ -1,6 +1,6 @@
 {
   "name": "alerterjs",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Stackable alerts without dependencies",
   "main": "alerter.js",
   "scripts": {
@@ -19,5 +19,11 @@
   "bugs": {
     "url": "https://github.com/gosukiwi/alerter/issues"
   },
-  "homepage": "https://github.com/gosukiwi/alerter#readme"
+  "homepage": "https://github.com/gosukiwi/alerter#readme",
+  "devDependencies": {
+    "eslint": "^5.4.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "google-closure-compiler": "^20180805.0.0"
+  }
 }
