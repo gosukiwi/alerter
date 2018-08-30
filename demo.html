@@ -32,8 +32,9 @@
                     alerter({
                         text: 'Hook up test' + i,
                         yOrientation: 'top',
-                        onClick: function ()  {
+                        onClick: function (alert)  {
                             console.log('On click event was triggered!');
+                            alert.hide();
                         }
                     });
                     i++;
