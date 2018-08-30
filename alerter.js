@@ -2,10 +2,6 @@
     alerter is a minimal vanilla javascript alert system, it will display a
     message, and then it will fade, it stacks with currently existant alerts.
 
-    TESTED ON:
-        IE 7, 8, 9, 10
-        Latest Chrome
-
     Copyright Federico Ramírez <fedra.arg@gmail.com>
     Licenced under the MIT Licence
 
@@ -83,36 +79,40 @@
     };
 
     fadeOut = function(element, opacity, fadeStep, fadeSpeed, options) {
-        var i = 0;
-        var removeIndex = null;
+        var i = 0,
+            removeIndex = null,
+            height,
+            position,
+            orientation;
 
         if(opacity - fadeStep >= 0) {
             setOpacity(element, opacity - fadeStep);
-            setTimeout(function() { fadeOut(element, opacity - fadeStep, fadeStep, fadeSpeed, options); }, fadeSpeed);
+            setTimeout(function() {
+              fadeOut(element, opacity - fadeStep, fadeStep, fadeSpeed, options);
+            }, fadeSpeed);
         } else {
             for(i = 0; i < activeAlertsElems.length; i++) {
                 if(activeAlertsElems[i] === element) {
                     removeIndex = i;
-                } else if (removeIndex !== null && i > removeIndex) {
-                    var diff = +options.styles.margin.replace('px', '') + (+options.styles.height.replace('px', ''));
-                    if (options.yOrientation === 'top') {
-                        activeAlertsElems[i].style.top = (+activeAlertsElems[i].style.top.replace('px', '') - diff) + 'px';
-                    }
-                    else {
-                        activeAlertsElems[i].style.bottom = (+activeAlertsElems[i].style.bottom.replace('px', '') - diff) + 'px';
-                    }
+                } else {
+                  orientation = options.yOrientation === 'top' ? 'top' : 'bottom' 
+                  height = +element.style.height.replace('px', '')
+                  position = (+activeAlertsElems[i].style[orientation].replace('px', '')) - options.margin;
+                  activeAlertsElems[i].style[orientation] = (position - height) + 'px';
+
+                //} else if (removeIndex !== null && i > removeIndex) {
+                //    diff = (+options.styles.margin.replace('px', '')) + (+options.styles.height.replace('px', ''));
+                //    orientation = options.yOrientation === 'top' ? 'top' : 'bottom' 
+                //    activeAlertsElems[i].style[orientation] = (+activeAlertsElems[i].style[orientation].replace('px', '') - diff) + 'px';
                 }
             }
             
             activeAlertsElems.splice(i, 1);
             element.parentNode.removeChild(element);
-            --activeAlerts;
+            activeAlerts -= 1;
 
             if (typeof options.onFadeOut === 'function') {
                 options.onFadeOut(options);
-            }
-            else {
-                console.error("Bad onFadeOut.");
             }
         }
     };
@@ -120,84 +120,57 @@
     /* -------------------------------------------------------------------------
         alerter initiation, call once for each alert you'd like.
     */
-    window.alerter = function (conf) {
+    window.alerter = function (settings) {
         var options,
             container;
 
         // if the parameter is a string, assume it's the text parameter
-        if(typeof(conf) === 'string') {
-            conf = { 'text' : conf };
+        if(typeof(settings) === 'string') {
+            settings = { 'text' : settings };
         }
 
         ++activeAlerts;
 
-        options = extend(defaults, conf);
-
+        options = extend(defaults, settings);
         container = document.createElement('div');
 
         if (options.id && typeof options.id === 'string') {
             container.id = options.id;
-        } else {
-            console.error('Bad id.');
         }
 
         if (options.class && typeof options.class === 'string') {
             container.className = options.class;
-        } else {
-            console.error('Bad class.');
         }
 
-        if (typeof options.onClick === 'function') {
-            container.onclick = function() {
-                container.onclick = null;                    
-                setTimeout(function () {
-                    fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options);
-                }, options.duration * 1000);
-                options.onClick();
-            }
-        } else {
+        //if (typeof options.onClick === 'function') {
+        //    container.onclick = function() {
+        //        container.onclick = null;                    
+        //        setTimeout(function () {
+        //            fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options);
+        //        }, options.duration * 1000);
+        //        options.onClick();
+        //    }
+        //} else {
+            var millisWaitedUntilFadeOut = (+options.duration > 0 ? options.duration : 3) * 1000
             setTimeout(function () {
                 fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options);
-             },
-             (+options.duration > 0 ? options.duration : 3) * 1000);
+             }, millisWaitedUntilFadeOut);
+        //}
 
-            if (options.onClick !== undefined) {
-                console.error('Bad onClick.');
-            }  
-        }
-
+        // TODO: Move all the style-related setup to it's own function
         container.style.position = 'absolute';
 
-        if(options.xOrientation === 'left') {
-            container.style.left = '0px';
-        } else if (options.xOrientation === 'right') {
-            container.style.right = '0px';
-        }
-        else {
-            return console.error('Bad xOrientation.');
-        }
+        var xOrientation = options.xOrientation === 'left' ? 'left' : 'right';
+        container.style[xOrientation] = '0px';
 
-        if (!options.styles['height'] || !options.styles['margin']) {
-            return console.error('Height and margin are needed.');
-        }
-
-        if(options.yOrientation === 'top') {
-            container.style.top = ((+options.styles.height.replace('px', '') * (activeAlerts - 1)) + (+options.styles.margin.replace('px', '') * (activeAlerts - 1))) + "px";
-        } else if (options.yOrientation === 'bottom') {
-            container.style.bottom = ((+options.styles.height.replace('px', '') * (activeAlerts - 1)) + (+options.styles.margin.replace('px', '') * (activeAlerts - 1))) + "px";
-        } else {
-            return console.error('Bad yOrientation.');
-        }
+        var yOrientation = options.yOrientation ==='top' ? 'top' : 'bottom'
+        container.style[yOrientation] = ((+options.styles.height.replace('px', '') * (activeAlerts - 1)) + (+options.styles.margin.replace('px', '') * (activeAlerts - 1))) + "px";
 
         for (var propertyName in options.styles) {
             container.style[propertyName] = options.styles[propertyName];
         }
 
-        if (options.text != '') {
-            container.appendChild(document.createTextNode(options.text));
-        } else {
-            return console.error('Bad text.');
-        }
+        container.appendChild(document.createTextNode(options.text || ""));
 
         activeAlertsElems.push(container);
 
