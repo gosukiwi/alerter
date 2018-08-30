@@ -136,17 +136,12 @@
     remove() {
       current.positions.remove(this);
       current.positions.moveDownFrom(this);
-      this.removeFromDOM();
     }
 
     get height() {
       const height = this.element.offsetHeight;
       const margin = parseInt(this.element.style.margin, 10);
       return height + margin;
-    }
-
-    removeFromDOM() {
-      this.element.parentNode.removeChild(this.element);
     }
 
     // Returns when this position is consirered to be on top of other position.
@@ -220,13 +215,13 @@
 
       this.element.appendChild(document.createTextNode(this.options.text || ''));
       this.element.style.position = 'absolute';
+      // We add the element to the DOM in a hidden position to use the browser to
+      // calculate it's size dynamically.
       this.element.style[this.position.orientation.x] = '-9990px';
       this.element.style[this.position.orientation.y] = '-9990px';
 
       current.positions.push(this.position);
-      // We add the element to the DOM in a hidden position to use the browser to
-      // calculate it's size dynamically.
-      document.body.appendChild(this.element);
+      this.addToDOM();
       this.position.moveToTop();
 
       // Bind callbacks
@@ -254,7 +249,16 @@
 
       this.removed = true;
       this.position.remove();
+      this.removeFromDOM();
       return this;
+    }
+
+    removeFromDOM() {
+      this.element.parentNode.removeChild(this.element);
+    }
+
+    addToDOM() {
+      document.body.appendChild(this.element);
     }
 
     close() {
