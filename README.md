@@ -44,3 +44,11 @@ customize as you please
     $ npm install alerterjs
     
 You can find alerter in `node_modules/alerterjs/alerter.js` as well as `node_modules/alerterjs/alerter.min.js`.
+
+# Development
+
+Install all dependencies with `npm`. To minify `alerter.js` and generate
+`alerter.min.js`, run:
+
+    $ bin/minify
+
