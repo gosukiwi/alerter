@@ -12,6 +12,44 @@ the text "Hello, World!", it's that easy.
 If you need more options, you can pass a configuration object instead of a 
 string ```alerter({'text': 'Hello, World!', 'orientation': 'left'});```
 
+Here are a few more examples:
+
+```javascript
+document.getElementById('my-button').onclick = function () {
+  alerter({
+    text: 'Hello, World!'
+    yOrientation: 'top',
+    onClick: function (alert)  {
+      console.log('On click event was triggered!');
+      // here you are given an instance of the alert
+      // you can close it manually as such:
+      alert.hide();
+    }
+  });
+}                
+
+// You can also get an instance as such:
+const alert = alerter(...);
+alert.hide(); // hides the alert
+```
+
+## Custom Styles
+If you specify a class name or an id in the options, all default styles are
+ignored. The following styles will be inlined to the element:
+
+```css
+alert {
+  position: absolute;
+  top: _;
+  left: _;
+  right: _;
+  bottom: _;
+}
+```
+
+The `top`, `left`, `right`, and `bottom` values will be updated dynamically so
+you won't need to touch those.
+
 # Configuration
 The default configuration works most of the times, but of course, you can 
 customize as you please
