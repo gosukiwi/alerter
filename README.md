@@ -19,7 +19,7 @@ customize as you please
 |Name|Mandatory?|Type|Default value|Description|
 |:--:|:--------:|:--:|:-----------:|:---------:|
 |text|yes|string|'Default Alert Text'|Alert text|
-|duration|yes|number|2|Number of seconds before fadeOut (if clickCallback is set, starts when the alert is clicked)|
+|duration|yes|number|2|Number of seconds before fadeOut (if onClick is set, starts when the alert is clicked)|
 |fadeStep|yes|number|5|Fade out step|
 |fadeSpeed|yes|number|25|Fade out speed|
 |xOrientation|yes|string ('left'/'right')|'left'|Alert placement on horizontal axis|
@@ -35,9 +35,9 @@ customize as you please
 |styles.minWidth|no|string|'250px'|Alert div min width|
 |styles.[STYLE_ATTRIBUTE_NAME]|no|||Any style you want to add on the alert div|
 |id|no|string|none|Optional id (styles array has precedence)|
-|cssClassName|no|string|none|Optional css classname (styles array and id have precedence)|
-|fadeOutCallback|no|function|none|Callback called after fadeOut|
-|clickCallback|no|function|none|Callback called on click event|
+|class|no|string|none|Optional css classname (styles array and id have precedence)|
+|onFadeOut|no|function|none|Callback called after fadeOut|
+|onClick|no|function|none|Callback called on click event|
 
 # Installation
 

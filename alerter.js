@@ -23,7 +23,7 @@
     var defaults = {
             id: undefined, // optional id if wanted
             text: 'Default Alert Text',
-            cssClassName: undefined,
+            class: undefined,
             styles: {
                 // the height of the alert div
                 height: '50px',
@@ -44,12 +44,12 @@
             fadeStep: 5,
             fadeSpeed: 25,
             // show it bottom right or bottom left? 
-            xOrientation: 'left', // left/right
-            yOrientation: 'top', // top/bottom
+            xOrientation: 'right', // left/right
+            yOrientation: 'bottom', // top/bottom
             // when the alert is hidden, you can hook up a callback, the
             // callback is called with the options for the alert as argument
-            fadeOutCallback: undefined,
-            clickCallback: undefined
+            onFadeOut: undefined,
+            onClick: undefined
         },
         activeAlerts = 0,
         activeAlertsElems = [],
@@ -108,16 +108,12 @@
             element.parentNode.removeChild(element);
             --activeAlerts;
 
-            if(options.fadeoutCallback !== undefined) {
-                if (typeof options.fadeoutCallback === 'function') {
-                    options.fadeoutCallback(options);
-                }
-                else {
-                    console.error("Bad fadeoutCallback.");
-                }
+            if (typeof options.onFadeOut === 'function') {
+                options.onFadeOut(options);
             }
-
-
+            else {
+                console.error("Bad onFadeOut.");
+            }
         }
     };
 
@@ -139,44 +135,42 @@
 
         container = document.createElement('div');
 
-        if (options.id)   {
-            if (typeof options.id === 'string') {
-                container.id = options.id;
-            }
-            else {
-                return console.error('Bad id.');
-            }
+        if (options.id && typeof options.id === 'string') {
+            container.id = options.id;
+        } else {
+            console.error('Bad id.');
         }
 
-        if (options.cssClassName)   {
-            if (typeof options.cssClassName === 'string') {
-                container.className = options.cssClassName;
-            }
-            else {
-                return console.error('Bad classname.');
-            }
+        if (options.class && typeof options.class === 'string') {
+            container.className = options.class;
+        } else {
+            console.error('Bad class.');
         }
 
-        if (options.clickCallback)   {
-            if (typeof options.clickCallback === 'function') {
-                container.onclick = function() {
-                    container.onclick = null;                    
-                    setTimeout(function () {
-                        fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options);
-                    }, options.duration * 1000);
-                    options.clickCallback();
-                }
+        if (typeof options.onClick === 'function') {
+            container.onclick = function() {
+                container.onclick = null;                    
+                setTimeout(function () {
+                    fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options);
+                }, options.duration * 1000);
+                options.onClick();
             }
-            else {
-                return console.error('Bad clickCallback.');
-            }
+        } else {
+            setTimeout(function () {
+                fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options);
+             },
+             (+options.duration > 0 ? options.duration : 3) * 1000);
+
+            if (options.onClick !== undefined) {
+                console.error('Bad onClick.');
+            }  
         }
 
         container.style.position = 'absolute';
 
         if(options.xOrientation === 'left') {
             container.style.left = '0px';
-        } else if (options.xOrientation === 'right'){
+        } else if (options.xOrientation === 'right') {
             container.style.right = '0px';
         }
         else {
@@ -189,30 +183,24 @@
 
         if(options.yOrientation === 'top') {
             container.style.top = ((+options.styles.height.replace('px', '') * (activeAlerts - 1)) + (+options.styles.margin.replace('px', '') * (activeAlerts - 1))) + "px";
-        } else if (options.yOrientation === 'bottom'){
+        } else if (options.yOrientation === 'bottom') {
             container.style.bottom = ((+options.styles.height.replace('px', '') * (activeAlerts - 1)) + (+options.styles.margin.replace('px', '') * (activeAlerts - 1))) + "px";
-        }
-        else {
+        } else {
             return console.error('Bad yOrientation.');
         }
 
-        for (var propertyName in options.styles)    {
+        for (var propertyName in options.styles) {
             container.style[propertyName] = options.styles[propertyName];
         }
 
-        if (options.text != '')   {
+        if (options.text != '') {
             container.appendChild(document.createTextNode(options.text));
-        }
-        else {
+        } else {
             return console.error('Bad text.');
         }
 
         activeAlertsElems.push(container);
 
         document.body.appendChild(container);
-
-        if (!options.clickCallback) {
-            setTimeout(function () { fadeOut(container, 100, options.fadeStep, options.fadeSpeed, options); }, (options.duration && options.duration > 0 ? options.duration : 3) * 1000);
-        }
     };
 })();
