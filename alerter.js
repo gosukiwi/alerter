@@ -186,12 +186,13 @@
 
   class Alert {
     constructor(options) {
-      const container = document.createElement('div');
       this.options = options;
-      this.element = container;
-      this.position = new Position(container, options);
+      this.element = document.createElement('div');
+      this.position = new Position(this.element, options);
 
       this.build();
+      this.setUpAutohide();
+      this.bindEvents();
     }
 
     build() {
@@ -224,9 +225,6 @@
       this.addToDOM();
       // the element needs to be added to the DOM before `moveToTop` is called
       this.position.moveToTop();
-
-      this.setUpAutohide();
-      this.bindEvents();
     }
 
     setUpAutohide() {
