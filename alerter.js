@@ -289,35 +289,33 @@
   // INITIALIZATION
   // ===========================================================================
   const DEFAULTS = {
-    id: undefined, // optional id if wanted
     text: 'Default Alert Text',
+    // optional element id
+    id: undefined, 
+    // optional element class
     class: undefined,
     styles: {
-      // the height of the alert div
       height: '50px',
-      // the foreground and background colors for the alert
       backgroundColor: '#A200FF',
       color: '#FFFFFF',
-      // font settings
       fontFamily: 'Segoe UI',
       fontSize: '13px',
-      // default margin, padding and size
       margin: '15px',
       padding: '5px',
       minWidth: '250px',
     },
     duration: 3,
-    // needed for stackable
     // these two options are for the fadeOut, and dictate how fast it is
     fadeStep: 5,
     fadeSpeed: 25,
     // show it top right or bottom left? any combination is fine
     xOrientation: 'right',
     yOrientation: 'bottom',
-    // when the alert is hidden, you can hook up a callback, the
-    // callback is called with the options for the alert as argument
+    // when the alert is hidden
     onClose: undefined,
+    // when the alert is clicked
     onClick: undefined,
+    // whether or not the alert will hide automatically
     autohide: true,
   };
 
