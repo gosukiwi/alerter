@@ -67,7 +67,8 @@
 
     remove(position) {
       const index = this.positions.indexOf(position);
-      return this.positions.splice(index, 1);
+      this.positions.splice(index, 1);
+      this.moveDownFrom(position);
     }
 
     // Returns all alert positions with the same orientation as this one.
@@ -90,21 +91,18 @@
         }
       });
     }
-  }
 
-  // This is the current global environment
-  //
-  class Current {
-    constructor() {
-      this.list = new PositionList();
-    }
+    // moves this position to the top of the stack
+    moveToTop(position) {
+      const alertAmount = this
+        .without(position)
+        .findByOrientation(position.orientation)
+        .length;
+      const initialVerticalPosition = alertAmount * position.height;
 
-    get positions() {
-      return this.list;
+      position.moveTo({ x: 0, y: initialVerticalPosition });
     }
   }
-  const current = new Current();
-  // Note that it also defines a constant `current` to access it.
 
   class Orientation {
     constructor(options) {
@@ -147,11 +145,6 @@
       return +this.element.style[this.orientation.y].replace('px', '');
     }
 
-    remove() {
-      current.positions.remove(this);
-      current.positions.moveDownFrom(this);
-    }
-
     get height() {
       const height = this.element.offsetHeight;
       const margin = parseInt(this.element.style.margin, 10);
@@ -165,29 +158,22 @@
       return this.y > other.y;
     }
 
-    // moves this position to the top of the stack
-    moveToTop() {
-      const alertAmount = current
-        .positions
-        .without(this)
-        .findByOrientation(this.orientation)
-        .length;
-      const initialVerticalPosition = alertAmount * this.height;
-
-      this.element.style[this.orientation.x] = '0px';
-      this.element.style[this.orientation.y] = `${initialVerticalPosition}px`;
-    }
-
     // moves this position down one place in the stack
     moveDown() {
       this.element.style[this.orientation.y] = `${this.y - this.height}px`;
     }
+
+    moveTo({ x, y }) {
+      this.element.style[this.orientation.x] = `${x}px`;
+      this.element.style[this.orientation.y] = `${y}px`;
+    }
   }
 
   class Alert {
-    constructor(options) {
+    constructor(options, positions) {
       this.options = options;
       this.element = document.createElement('div');
+      this.positions = positions;
       this.position = new Position(this.element, options);
 
       this.build();
@@ -221,10 +207,10 @@
       this.element.style[this.position.orientation.x] = '-9990px';
       this.element.style[this.position.orientation.y] = '-9990px';
 
-      current.positions.push(this.position);
+      this.positions.push(this.position);
       this.addToDOM();
       // the element needs to be added to the DOM before `moveToTop` is called
-      this.position.moveToTop();
+      this.positions.moveToTop(this.position);
     }
 
     setUpAutohide() {
@@ -265,7 +251,7 @@
       }
 
       this.removed = true;
-      this.position.remove();
+      this.positions.remove(this.position);
       this.removeFromDOM();
       return this;
     }
@@ -317,12 +303,13 @@
     autohide: true,
   };
 
+  const positions = new PositionList();
   window.alerter = (settings) => {
     // if the parameter is a string, assume it's the text parameter
     if (typeof settings === 'string') {
       settings = { text: settings };
     }
     const options = extend(DEFAULTS, settings);
-    return new Alert(options);
+    return new Alert(options, positions);
   };
 })();
