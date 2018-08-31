@@ -31,6 +31,10 @@ document.getElementById('my-button').onclick = function () {
 // You can also get an instance as such:
 const alert = alerter(...);
 alert.hide(); // hides the alert
+
+// Hiding will immediately hide the alert, if you want to fade it
+// programatically, you can do so as such:
+alert.fade();
 ```
 
 ## Custom Styles

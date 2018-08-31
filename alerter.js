@@ -30,6 +30,20 @@
     }
   }
 
+  function extend(a, b) {
+    const output = {};
+
+    Object.keys(a).forEach((key) => {
+      output[key] = a[key];
+    });
+
+    Object.keys(b).forEach((key) => {
+      output[key] = b[key];
+    });
+
+    return output;
+  }
+
   // ===========================================================================
   // CLASSES AND GLOBALS
   // ===========================================================================
@@ -170,20 +184,6 @@
     }
   }
 
-  function extend(a, b) {
-    const output = {};
-
-    Object.keys(a).forEach((key) => {
-      output[key] = a[key];
-    });
-
-    Object.keys(b).forEach((key) => {
-      output[key] = b[key];
-    });
-
-    return output;
-  }
-
   class Alert {
     constructor(options) {
       const container = document.createElement('div');
@@ -236,9 +236,7 @@
 
       const waitUntilHide = (+this.options.duration > 0 ? this.options.duration : 3) * 1000;
       setTimeout(() => {
-        fadeOut(this.position, 100, this.options.fadeStep, this.options.fadeSpeed, () => {
-          this.hide();
-        });
+        this.fade();
       }, waitUntilHide);
     }
 
@@ -251,6 +249,12 @@
         this.element.onclick = null;
         this.options.onClick(this);
       };
+    }
+
+    fade() {
+      fadeOut(this.position, 100, this.options.fadeStep, this.options.fadeSpeed, () => {
+        this.hide();
+      });
     }
 
     hide() {
