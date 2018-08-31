@@ -19,11 +19,11 @@
     element.style.filter = `alpha(opacity=${value})`;
   }
 
-  function fadeOut(position, opacity, fadeStep, fadeSpeed, done) {
+  function fadeOut(element, opacity, fadeStep, fadeSpeed, done) {
     if (opacity - fadeStep >= 0) {
-      setOpacity(position.element, opacity - fadeStep);
+      setOpacity(element, opacity - fadeStep);
       setTimeout(() => {
-        fadeOut(position, opacity - fadeStep, fadeStep, fadeSpeed, done);
+        fadeOut(element, opacity - fadeStep, fadeStep, fadeSpeed, done);
       }, fadeSpeed);
     } else {
       done();
@@ -236,7 +236,7 @@
     }
 
     fade() {
-      fadeOut(this.position, 100, this.options.fadeStep, this.options.fadeSpeed, () => {
+      fadeOut(this.position.element, 100, this.options.fadeStep, this.options.fadeSpeed, () => {
         this.hide();
       });
     }
